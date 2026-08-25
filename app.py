@@ -81,54 +81,53 @@ def _describe(path_str: str, mtime: float) -> dict:
     }
 
 
-def map_figure(product, patches, threshold: float, bbox) -> go.Figure:
+def map_figure(
+    product,
+    patches,
+    threshold: float,
+    bbox,
+    vista: str = "Ambas",
+) -> go.Figure:
     mask = np.isfinite(product.afai) & (product.afai >= threshold)
     lat_c, lon_c = _bbox_center(bbox)
     fig = go.Figure()
-    if mask.any():
+    show_afai = vista in ("Señal AFAI", "Ambas")
+    show_patches = vista in ("Manchas", "Ambas")
+
+    if show_afai and mask.any():
         rows, cols = np.where(mask)
         lats = product.lat[rows]
         lons = product.lon[cols]
         vals = product.afai[mask]
-        if vals.size > 25000:
+        if vals.size > 40000:
             rng = np.random.default_rng(0)
-            idx = rng.choice(vals.size, 25000, replace=False)
+            idx = rng.choice(vals.size, 40000, replace=False)
             lats, lons, vals = lats[idx], lons[idx], vals[idx]
+        zmax = max(float(np.nanpercentile(vals, 98)), threshold * 2)
         fig.add_trace(
-            go.Scattermap(
+            go.Densitymap(
                 lat=lats,
                 lon=lons,
-                mode="markers",
-                marker={
-                    "size": 6,
-                    "color": vals,
-                    "colorscale": "YlOrRd",
-                    "cmin": threshold,
-                    "cmax": max(float(np.nanpercentile(vals, 98)), threshold * 2),
-                    "colorbar": {"title": "AFAI"},
-                },
-                name="AFAI",
-                hovertemplate="AFAI=%{marker.color:.4f}<br>%{lat:.3f}, %{lon:.3f}<extra></extra>",
+                z=vals,
+                radius=16,
+                colorscale=[
+                    [0.0, "rgba(255,255,204,0)"],
+                    [0.15, "rgba(255,237,160,0.35)"],
+                    [0.4, "rgba(254,178,76,0.7)"],
+                    [0.7, "rgba(240,59,32,0.85)"],
+                    [1.0, "rgba(153,0,0,0.95)"],
+                ],
+                zmin=threshold,
+                zmax=zmax,
+                opacity=0.72,
+                name="Señal AFAI",
+                colorbar={"title": "AFAI", "len": 0.6},
+                hovertemplate="AFAI=%{z:.4f}<br>%{lat:.3f}, %{lon:.3f}<extra></extra>",
             )
         )
-    if patches:
-        fig.add_trace(
-            go.Scattermap(
-                lat=[p.lat for p in patches],
-                lon=[p.lon for p in patches],
-                mode="markers+text",
-                text=[str(p.id) for p in patches],
-                textposition="top center",
-                marker={"size": 11, "color": "#7C3AED"},
-                name="Manchas",
-                hovertemplate=(
-                    "Mancha %{text}<br>%{customdata[0]:.1f} km²"
-                    "<br>%{lat:.3f}, %{lon:.3f}<extra></extra>"
-                ),
-                customdata=[[p.area_km2] for p in patches],
-            )
-        )
-        for patch in patches[:40]:
+
+    if show_patches and patches:
+        for patch in patches[:60]:
             xs = [pt[0] for pt in patch.hull]
             ys = [pt[1] for pt in patch.hull]
             fig.add_trace(
@@ -136,14 +135,33 @@ def map_figure(product, patches, threshold: float, bbox) -> go.Figure:
                     lat=ys,
                     lon=xs,
                     mode="lines",
-                    line={"color": "#E9A825", "width": 2},
-                    name=f"#{patch.id}",
+                    line={"color": "#C43C17", "width": 3},
+                    name=f"Mancha {patch.id}",
                     showlegend=False,
                     hoverinfo="skip",
+                    below="",
                 )
             )
+        fig.add_trace(
+            go.Scattermap(
+                lat=[p.lat for p in patches],
+                lon=[p.lon for p in patches],
+                mode="text",
+                text=[str(p.id) for p in patches],
+                textfont={"size": 13, "color": "#1A1A1A"},
+                marker={"size": 0, "opacity": 0},
+                name="Manchas",
+                hovertemplate=(
+                    "Mancha %{text}<br>%{customdata[0]:.1f} km²"
+                    "<br>%{lat:.3f}, %{lon:.3f}<extra></extra>"
+                ),
+                customdata=[[p.area_km2] for p in patches],
+                below="",
+            )
+        )
+
     fig.update_layout(
-        map_style="open-street-map",
+        map_style="carto-positron",
         map={"center": {"lat": lat_c, "lon": lon_c}, "zoom": 4.3},
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
         height=620,
@@ -383,7 +401,21 @@ with st.container(horizontal=True):
 if product.files:
     st.caption("Granulos: " + " · ".join(product.files))
 
-st.plotly_chart(map_figure(product, patches, threshold, bbox), width="stretch")
+vista = st.segmented_control(
+    "Vista del mapa",
+    options=["Manchas", "Señal AFAI", "Ambas"],
+    default="Ambas",
+    help="La señal AFAI se muestra como mapa de calor. Los contornos son manchas agrupadas.",
+)
+st.plotly_chart(
+    map_figure(product, patches, threshold, bbox, vista=vista or "Ambas"),
+    width="stretch",
+)
+st.caption(
+    "Naranja–rojo: señal AFAI (posible material flotante). "
+    "Contorno e índice: mancha agrupada. "
+    "Elige **Manchas** si solo quieres los polígonos, sin el mapa de calor."
+)
 
 left, right = st.columns([1.25, 1])
 with left:
