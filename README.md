@@ -1,6 +1,9 @@
 # Sargazo Caribe
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![NASA Earthdata](https://img.shields.io/badge/NASA-Earthdata-0B3D91?logo=nasa&logoColor=white)](https://www.earthdata.nasa.gov/)
 
 App Streamlit y CLI para **revisar manchas de sargazo flotante** en el mar Caribe con **NASA PACE OCI** (últimos días, casi tiempo real).
 
