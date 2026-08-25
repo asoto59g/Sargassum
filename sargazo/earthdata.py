@@ -40,18 +40,63 @@ def login(
 
 def is_logged_in() -> bool:
     try:
+        if getattr(earthaccess.__auth__, "authenticated", False):
+            return True
+    except Exception:
+        pass
+    try:
         auth = earthaccess.login(strategy="netrc")
-        return bool(auth)
+        return bool(getattr(auth, "authenticated", False))
     except Exception:
         try:
             if os.environ.get("EARTHDATA_USERNAME") and os.environ.get(
                 "EARTHDATA_PASSWORD"
             ):
                 auth = earthaccess.login(strategy="environment")
-                return bool(auth)
+                return bool(getattr(auth, "authenticated", False))
         except Exception:
             return False
     return False
+
+
+def logout() -> None:
+    """Cierra la sesión Earthdata: memoria, variables de entorno y _netrc."""
+    for key in ("EARTHDATA_USERNAME", "EARTHDATA_PASSWORD", "EARTHDATA_TOKEN"):
+        os.environ.pop(key, None)
+    _remove_earthdata_netrc()
+    cookies = Path.home() / ".urs_cookies"
+    if cookies.exists():
+        try:
+            cookies.write_text("")
+        except OSError:
+            pass
+    try:
+        auth = earthaccess.__auth__
+        auth.authenticated = False
+        auth.token = None
+        auth.username = None
+        auth.password = None
+    except Exception:
+        pass
+
+
+def _remove_earthdata_netrc() -> None:
+    try:
+        from earthaccess.auth import netrc_path
+        from tinynetrc import Netrc
+    except Exception:
+        return
+    path = netrc_path()
+    if not path.exists():
+        return
+    try:
+        nrc = Netrc(str(path))
+        for host in list(nrc):
+            if "earthdata" in host.lower() or host.lower() == "urs.earthdata.nasa.gov":
+                del nrc[host]
+        nrc.save()
+    except Exception:
+        return
 
 
 def _granule_name(item: object) -> str:

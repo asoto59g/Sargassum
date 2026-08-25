@@ -31,6 +31,7 @@ from sargazo.earthdata import (
     is_logged_in,
     local_nc_files,
     login,
+    logout,
     search_last_days,
 )
 from sargazo.patches import extract_patches, patches_to_geojson, patches_to_rows
@@ -221,6 +222,14 @@ with st.sidebar:
     if _logged_in():
         st.badge("Sesión lista", icon=":material/check_circle:", color="green")
         st.session_state.earthdata_ok = True
+        if st.button(
+            ":material/logout: Cerrar sesión",
+            width="stretch",
+            help="Quita la sesión de esta app y las credenciales guardadas en _netrc.",
+        ):
+            logout()
+            st.session_state.earthdata_ok = False
+            st.rerun()
     else:
         with st.form("earthdata_login"):
             user = st.text_input("Usuario Earthdata")

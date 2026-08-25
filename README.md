@@ -55,6 +55,7 @@ En Windows también puedes usar `run.bat`.
 2. En la barra lateral inicia sesión con tu usuario y contraseña Earthdata (se guarda en `_netrc` / `.netrc`, **nunca en el repo**).
 3. Elige región (Mar Caribe, Caribe Costa Rica o Gran Caribe + Golfo), días y umbral AFAI.
 4. Pulsa **Buscar y procesar PACE SFREFL**.
+5. Para salir, usa **Cerrar sesión** en la barra lateral: borra la sesión de la app y las credenciales Earthdata de `_netrc`.
 
 La primera corrida sobre todo el Caribe puede bajar varios granulos. Para probar, usa **Caribe Costa Rica** y 1–2 días.
 
@@ -107,6 +108,7 @@ Sargaso_Caribe.js      # Prototipo GEE no operativo
 No subas contraseñas. Opciones:
 
 - Formulario de la app (`persist=True` → `_netrc` en Windows)
+- **Cerrar sesión** en la barra lateral (quita `_netrc` de Earthdata)
 - Variables `EARTHDATA_USERNAME` y `EARTHDATA_PASSWORD`
 - Archivo `.netrc` / `_netrc` en el home del usuario
 
