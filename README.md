@@ -1,3 +1,5 @@
+<img width="1280" height="640" alt="image" src="https://github.com/user-attachments/assets/ada42bf2-b68e-4609-be79-d927a7ddbad5" />
+
 # Sargazo Caribe
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
