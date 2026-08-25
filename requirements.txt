@@ -1,0 +1,12 @@
+streamlit>=1.57
+earthaccess
+netCDF4
+numpy
+scipy
+pandas
+plotly
+global-land-mask
+matplotlib
+pillow
+xarray
+h5netcdf

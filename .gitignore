@@ -1,0 +1,32 @@
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Granulos NASA (cientos de MB cada uno; no subirlos)
+*.nc
+*.NetCDF
+
+# Productos locales
+salidas/*.npz
+salidas/*.geojson
+salidas/*.csv
+salidas/*.png
+salidas/*.tif
+
+# Credenciales Earthdata
+.netrc
+_netrc
+.env
+.streamlit/secrets.toml
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
